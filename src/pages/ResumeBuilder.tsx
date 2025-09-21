@@ -8,6 +8,8 @@ import { EducationForm } from '@/components/resume/EducationForm';
 import { SkillsForm } from '@/components/resume/SkillsForm';
 import { SummaryForm } from '@/components/resume/SummaryForm';
 import { ResumePreview } from '@/components/resume/ResumePreview';
+import { TemplateSelector, ResumeTemplate } from '@/components/resume/TemplateSelector';
+import { ApiKeyInput } from '@/components/ApiKeyInput';
 import { Download, Sparkles, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -67,7 +69,9 @@ const ResumeBuilder = () => {
     },
   });
 
-  const [activeTab, setActiveTab] = useState('personal');
+  const [activeTab, setActiveTab] = useState('template');
+  const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate>('modern');
+  const [apiKeySet, setApiKeySet] = useState(false);
 
   const updateResumeData = (section: keyof ResumeData, data: any) => {
     setResumeData(prev => ({
@@ -145,7 +149,11 @@ const ResumeBuilder = () => {
           <div className="space-y-6">
             <div className="form-section">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-5 mb-6">
+                <TabsList className="grid w-full grid-cols-6 mb-6">
+                  <TabsTrigger value="template" className="text-xs sm:text-sm">
+                    <span className="mr-1">🎨</span>
+                    <span className="hidden sm:inline">Template</span>
+                  </TabsTrigger>
                   <TabsTrigger value="personal" className="text-xs sm:text-sm">
                     <span className="mr-1">{getTabIcon('personal')}</span>
                     <span className="hidden sm:inline">Personal</span>
@@ -167,6 +175,16 @@ const ResumeBuilder = () => {
                     <span className="hidden sm:inline">Skills</span>
                   </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="template">
+                  <div className="space-y-6">
+                    {!apiKeySet && <ApiKeyInput onApiKeySet={setApiKeySet} />}
+                    <TemplateSelector 
+                      selectedTemplate={selectedTemplate}
+                      onTemplateChange={setSelectedTemplate}
+                    />
+                  </div>
+                </TabsContent>
 
                 <TabsContent value="personal">
                   <PersonalInfoForm
@@ -210,7 +228,7 @@ const ResumeBuilder = () => {
           <div className="lg:sticky lg:top-24 lg:h-[calc(100vh-6rem)]">
             <Card className="resume-preview h-full">
               <CardContent className="p-0 h-full">
-                <ResumePreview data={resumeData} />
+                <ResumePreview data={resumeData} template={selectedTemplate} />
               </CardContent>
             </Card>
           </div>

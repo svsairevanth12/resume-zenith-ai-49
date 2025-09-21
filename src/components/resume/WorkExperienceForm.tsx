@@ -66,17 +66,25 @@ export const WorkExperienceForm: React.FC<WorkExperienceFormProps> = ({ data, on
       return;
     }
 
-    // TODO: Implement Gemini AI integration
-    const aiDescription = `• Led development of key features and improvements resulting in 25% increase in user engagement
-• Collaborated with cross-functional teams to deliver high-quality software solutions on time and within budget
-• Implemented best practices for code quality, testing, and deployment processes
-• Mentored junior developers and contributed to team knowledge sharing initiatives`;
+    try {
+      const { geminiService } = await import('@/lib/gemini');
+      const aiDescription = await geminiService.generateJobDescription(
+        experience.jobTitle,
+        experience.company
+      );
 
-    updateExperience(experience.id, 'description', aiDescription);
-    toast({
-      title: "Description Generated!",
-      description: "AI has created a professional job description for you.",
-    });
+      updateExperience(experience.id, 'description', aiDescription);
+      toast({
+        title: "Description Generated!",
+        description: "AI has created a professional job description for you.",
+      });
+    } catch (error) {
+      toast({
+        title: "AI Generation Failed",
+        description: error instanceof Error ? error.message : "Please check your API key and try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

@@ -18,9 +18,8 @@ export const SummaryForm: React.FC<SummaryFormProps> = ({ data, onChange }) => {
   const generateSummary = async () => {
     setIsGenerating(true);
     try {
-      // TODO: Implement Gemini AI integration
-      // For now, we'll use a sample generated summary
-      const aiGeneratedSummary = `Experienced software developer with 5+ years of expertise in full-stack development, specializing in React, Node.js, and cloud technologies. Proven track record of delivering scalable web applications and leading cross-functional teams. Passionate about creating efficient, user-centric solutions that drive business growth and enhance user experience.`;
+      const { geminiService } = await import('@/lib/gemini');
+      const aiGeneratedSummary = await geminiService.generateProfessionalSummary();
       
       onChange(aiGeneratedSummary);
       toast({
@@ -29,8 +28,8 @@ export const SummaryForm: React.FC<SummaryFormProps> = ({ data, onChange }) => {
       });
     } catch (error) {
       toast({
-        title: "Generation Failed",
-        description: "Unable to generate summary. Please try again.",
+        title: "AI Generation Failed",
+        description: error instanceof Error ? error.message : "Please check your API key and try again.",
         variant: "destructive",
       });
     } finally {
@@ -50,8 +49,8 @@ export const SummaryForm: React.FC<SummaryFormProps> = ({ data, onChange }) => {
 
     setIsGenerating(true);
     try {
-      // TODO: Implement AI improvement
-      const improved = data + " Additionally, I excel at problem-solving and have a strong background in agile methodologies and continuous integration practices.";
+      const { geminiService } = await import('@/lib/gemini');
+      const improved = await geminiService.improveSummary(data);
       onChange(improved);
       toast({
         title: "Summary Improved!",
@@ -59,8 +58,8 @@ export const SummaryForm: React.FC<SummaryFormProps> = ({ data, onChange }) => {
       });
     } catch (error) {
       toast({
-        title: "Improvement Failed",
-        description: "Unable to improve summary. Please try again.",
+        title: "AI Improvement Failed",
+        description: error instanceof Error ? error.message : "Please check your API key and try again.",
         variant: "destructive",
       });
     } finally {

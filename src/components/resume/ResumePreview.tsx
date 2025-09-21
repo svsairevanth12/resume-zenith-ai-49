@@ -1,12 +1,14 @@
 import React from 'react';
 import { ResumeData } from '@/pages/ResumeBuilder';
-import { Mail, Phone, MapPin, Linkedin, Globe, Calendar } from 'lucide-react';
+import { ResumeTemplate } from './TemplateSelector';
+import { Mail, Phone, MapPin, Linkedin, Globe, Calendar, GraduationCap, Briefcase } from 'lucide-react';
 
 interface ResumePreviewProps {
   data: ResumeData;
+  template?: ResumeTemplate;
 }
 
-export const ResumePreview: React.FC<ResumePreviewProps> = ({ data }) => {
+export const ResumePreview: React.FC<ResumePreviewProps> = ({ data, template = 'modern' }) => {
   const formatDate = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString + '-01');
@@ -30,44 +32,102 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data }) => {
     }
   };
 
+  const getTemplateStyles = () => {
+    switch (template) {
+      case 'classic':
+        return {
+          container: 'bg-white text-black font-serif',
+          header: 'border-b-2 border-black pb-4 mb-8',
+          name: 'text-3xl font-bold mb-2 text-black',
+          contact: 'text-sm text-gray-700',
+          section: 'mb-6',
+          sectionTitle: 'text-xl font-bold mb-3 text-black border-b border-gray-300 pb-1',
+          content: 'text-gray-800'
+        };
+      case 'creative':
+        return {
+          container: 'bg-gradient-to-br from-orange-50 to-red-50 text-black',
+          header: 'bg-gradient-to-r from-orange-500 to-red-600 text-white p-6 rounded-t-lg mb-8',
+          name: 'text-3xl font-bold mb-2',
+          contact: 'text-sm text-orange-100',
+          section: 'mb-6 px-6',
+          sectionTitle: 'text-xl font-bold mb-3 text-orange-600 border-l-4 border-orange-500 pl-3',
+          content: 'text-gray-800'
+        };
+      case 'minimal':
+        return {
+          container: 'bg-white text-gray-900',
+          header: 'mb-12 text-center',
+          name: 'text-4xl font-light mb-4 text-gray-900',
+          contact: 'text-sm text-gray-600',
+          section: 'mb-8',
+          sectionTitle: 'text-lg font-light mb-4 text-gray-900 uppercase tracking-wide',
+          content: 'text-gray-700'
+        };
+      case 'executive':
+        return {
+          container: 'bg-white text-black',
+          header: 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-8 mb-8',
+          name: 'text-4xl font-bold mb-3',
+          contact: 'text-sm text-emerald-100',
+          section: 'mb-8 px-8',
+          sectionTitle: 'text-2xl font-bold mb-4 text-emerald-600 border-b-2 border-emerald-500 pb-2',
+          content: 'text-gray-800'
+        };
+      default: // modern
+        return {
+          container: 'bg-white text-black',
+          header: 'mb-8 pb-6 border-b-2 border-primary/20',
+          name: 'text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent',
+          contact: 'text-sm text-gray-600',
+          section: 'mb-6',
+          sectionTitle: 'text-xl font-semibold mb-3 text-primary flex items-center',
+          content: 'text-gray-800'
+        };
+    }
+  };
+
+  const styles = getTemplateStyles();
+
   return (
-    <div className="h-full bg-white text-gray-900 overflow-y-auto">
-      <div className="max-w-[8.5in] mx-auto p-8 bg-white min-h-full">
-        {/* Header Section */}
+    <div className="h-full overflow-y-auto">
+      <div className={`${styles.container} p-8 shadow-sm max-w-[21cm] mx-auto`} style={{ minHeight: '29.7cm' }}>
+        {/* Header */}
         {hasContent('personalInfo') && (
-          <header className="mb-6 pb-4 border-b-2 border-blue-600">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <header className={styles.header}>
+            <h1 className={styles.name}>
               {data.personalInfo.fullName || 'Your Name'}
             </h1>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-600">
+            
+            <div className={`flex flex-wrap gap-4 ${styles.contact}`}>
               {data.personalInfo.email && (
-                <div className="flex items-center space-x-2">
-                  <Mail className="h-4 w-4 text-blue-600" />
-                  <span>{data.personalInfo.email}</span>
+                <div className="flex items-center">
+                  <Mail className="h-4 w-4 mr-1" />
+                  {data.personalInfo.email}
                 </div>
               )}
               {data.personalInfo.phone && (
-                <div className="flex items-center space-x-2">
-                  <Phone className="h-4 w-4 text-blue-600" />
-                  <span>{data.personalInfo.phone}</span>
+                <div className="flex items-center">
+                  <Phone className="h-4 w-4 mr-1" />
+                  {data.personalInfo.phone}
                 </div>
               )}
               {data.personalInfo.location && (
-                <div className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4 text-blue-600" />
-                  <span>{data.personalInfo.location}</span>
+                <div className="flex items-center">
+                  <MapPin className="h-4 w-4 mr-1" />
+                  {data.personalInfo.location}
                 </div>
               )}
               {data.personalInfo.linkedin && (
-                <div className="flex items-center space-x-2">
-                  <Linkedin className="h-4 w-4 text-blue-600" />
-                  <span>{data.personalInfo.linkedin}</span>
+                <div className="flex items-center">
+                  <Linkedin className="h-4 w-4 mr-1" />
+                  {data.personalInfo.linkedin}
                 </div>
               )}
               {data.personalInfo.website && (
-                <div className="flex items-center space-x-2">
-                  <Globe className="h-4 w-4 text-blue-600" />
-                  <span>{data.personalInfo.website}</span>
+                <div className="flex items-center">
+                  <Globe className="h-4 w-4 mr-1" />
+                  {data.personalInfo.website}
                 </div>
               )}
             </div>
@@ -76,11 +136,11 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data }) => {
 
         {/* Professional Summary */}
         {hasContent('summary') && (
-          <section className="mb-6">
-            <h2 className="text-xl font-semibold text-blue-600 mb-3 border-b border-gray-300 pb-1">
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>
               Professional Summary
             </h2>
-            <p className="text-gray-700 leading-relaxed">
+            <p className={`${styles.content} leading-relaxed`}>
               {data.summary}
             </p>
           </section>
@@ -88,35 +148,35 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data }) => {
 
         {/* Work Experience */}
         {hasContent('workExperience') && (
-          <section className="mb-6">
-            <h2 className="text-xl font-semibold text-blue-600 mb-3 border-b border-gray-300 pb-1">
-              Professional Experience
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <Briefcase className="h-5 w-5 mr-2" />
+              Work Experience
             </h2>
             <div className="space-y-4">
-              {data.workExperience.map((job) => (
-                <div key={job.id} className="mb-4">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-2">
+              {data.workExperience.map((exp) => (
+                <div key={exp.id}>
+                  <div className="flex justify-between items-start mb-1">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {job.jobTitle || 'Job Title'}
-                      </h3>
-                      <p className="text-gray-700 font-medium">
-                        {job.company || 'Company Name'}
-                        {job.location && ` • ${job.location}`}
-                      </p>
+                      <h3 className={`font-semibold ${styles.content}`}>{exp.jobTitle}</h3>
+                      <p className={styles.content}>{exp.company}</p>
                     </div>
-                    <div className="text-sm text-gray-600 flex items-center mt-1 sm:mt-0">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {formatDate(job.startDate)} - {job.isCurrentPosition ? 'Present' : formatDate(job.endDate)}
+                    <div className={`text-right text-sm ${styles.contact}`}>
+                      <div className="flex items-center">
+                        <Calendar className="h-4 w-4 mr-1" />
+                        {formatDate(exp.startDate)} - {exp.isCurrentPosition ? 'Present' : formatDate(exp.endDate)}
+                      </div>
+                      {exp.location && (
+                        <div className="flex items-center mt-1">
+                          <MapPin className="h-4 w-4 mr-1" />
+                          {exp.location}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  {job.description && (
-                    <div className="text-gray-700 text-sm">
-                      {job.description.split('\n').map((line, index) => (
-                        <p key={index} className="mb-1">
-                          {line}
-                        </p>
-                      ))}
+                  {exp.description && (
+                    <div className={`${styles.content} text-sm mt-2 whitespace-pre-line`}>
+                      {exp.description}
                     </div>
                   )}
                 </div>
@@ -127,32 +187,27 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data }) => {
 
         {/* Education */}
         {hasContent('education') && (
-          <section className="mb-6">
-            <h2 className="text-xl font-semibold text-blue-600 mb-3 border-b border-gray-300 pb-1">
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>
+              <GraduationCap className="h-5 w-5 mr-2" />
               Education
             </h2>
             <div className="space-y-3">
               {data.education.map((edu) => (
-                <div key={edu.id} className="mb-3">
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {edu.degree || 'Degree'}
-                      </h3>
-                      <p className="text-gray-700">
-                        {edu.institution || 'Institution'}
-                        {edu.location && ` • ${edu.location}`}
-                      </p>
-                      {edu.gpa && (
-                        <p className="text-sm text-gray-600">GPA: {edu.gpa}</p>
-                      )}
-                    </div>
+                <div key={edu.id} className="flex justify-between items-start">
+                  <div>
+                    <h3 className={`font-semibold ${styles.content}`}>{edu.degree}</h3>
+                    <p className={styles.content}>{edu.institution}</p>
+                    {edu.location && <p className={`text-sm ${styles.contact}`}>{edu.location}</p>}
+                  </div>
+                  <div className={`text-right text-sm ${styles.contact}`}>
                     {edu.graduationDate && (
-                      <div className="text-sm text-gray-600 flex items-center mt-1 sm:mt-0">
+                      <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-1" />
                         {formatDate(edu.graduationDate)}
                       </div>
                     )}
+                    {edu.gpa && <p className="mt-1">GPA: {edu.gpa}</p>}
                   </div>
                 </div>
               ))}
@@ -162,52 +217,39 @@ export const ResumePreview: React.FC<ResumePreviewProps> = ({ data }) => {
 
         {/* Skills */}
         {hasContent('skills') && (
-          <section className="mb-6">
-            <h2 className="text-xl font-semibold text-blue-600 mb-3 border-b border-gray-300 pb-1">
-              Skills & Expertise
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Skills</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {data.skills.technical.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Technical Skills</h3>
+                  <h3 className={`font-medium ${styles.content} mb-2`}>Technical Skills</h3>
                   <div className="flex flex-wrap gap-1">
                     {data.skills.technical.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
-                      >
+                      <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
                         {skill}
                       </span>
                     ))}
                   </div>
                 </div>
               )}
-              
               {data.skills.soft.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Soft Skills</h3>
+                  <h3 className={`font-medium ${styles.content} mb-2`}>Soft Skills</h3>
                   <div className="flex flex-wrap gap-1">
                     {data.skills.soft.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded"
-                      >
+                      <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
                         {skill}
                       </span>
                     ))}
                   </div>
                 </div>
               )}
-              
               {data.skills.languages.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Languages</h3>
+                  <h3 className={`font-medium ${styles.content} mb-2`}>Languages</h3>
                   <div className="flex flex-wrap gap-1">
                     {data.skills.languages.map((skill, index) => (
-                      <span
-                        key={index}
-                        className="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded"
-                      >
+                      <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
                         {skill}
                       </span>
                     ))}

@@ -133,7 +133,7 @@ const ResumeBuilder = () => {
                 className="btn-hero"
               >
                 <Download className="h-4 w-4 mr-2" />
-                Download PDF
+                Download
               </Button>
             </div>
           </div>

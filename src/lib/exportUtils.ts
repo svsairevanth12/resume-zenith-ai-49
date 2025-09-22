@@ -1,6 +1,5 @@
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 import { saveAs } from 'file-saver';
 import { ResumeData } from '@/pages/ResumeBuilder';
 
@@ -46,261 +45,108 @@ export const exportToPDF = async (resumeData: ResumeData, elementId: string = 'r
 
 export const exportToDocx = async (resumeData: ResumeData) => {
   try {
-    const doc = new Document({
-      sections: [{
-        properties: {},
-        children: [
-          // Header with name
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: resumeData.personalInfo.fullName,
-                bold: true,
-                size: 32,
-              }),
-            ],
-            heading: HeadingLevel.TITLE,
-            alignment: AlignmentType.CENTER,
-          }),
+    // Create HTML content for Word document
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Resume</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 40px; line-height: 1.6; }
+          .header { text-align: center; margin-bottom: 30px; }
+          .name { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+          .contact { font-size: 14px; margin-bottom: 5px; }
+          .section { margin-bottom: 25px; }
+          .section-title { font-size: 18px; font-weight: bold; border-bottom: 2px solid #333; margin-bottom: 15px; padding-bottom: 5px; }
+          .job-title { font-weight: bold; font-size: 16px; }
+          .company { font-style: italic; margin-bottom: 5px; }
+          .date { font-size: 14px; color: #666; margin-bottom: 10px; }
+          .description { margin-bottom: 15px; }
+          .skills-category { font-weight: bold; display: inline; }
+          ul { margin: 0; padding-left: 20px; }
+          li { margin-bottom: 5px; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="name">${resumeData.personalInfo.fullName}</div>
+          <div class="contact">${resumeData.personalInfo.email} | ${resumeData.personalInfo.phone}</div>
+          <div class="contact">${resumeData.personalInfo.location}</div>
+          ${resumeData.personalInfo.linkedin || resumeData.personalInfo.website ? 
+            `<div class="contact">${[resumeData.personalInfo.linkedin, resumeData.personalInfo.website].filter(Boolean).join(' | ')}</div>` 
+            : ''}
+        </div>
 
-          // Contact information
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `${resumeData.personalInfo.email} | ${resumeData.personalInfo.phone}`,
-                size: 20,
-              }),
-            ],
-            alignment: AlignmentType.CENTER,
-          }),
-          
-          new Paragraph({
-            children: [
-              new TextRun({
-                text: `${resumeData.personalInfo.location}`,
-                size: 20,
-              }),
-            ],
-            alignment: AlignmentType.CENTER,
-          }),
+        ${resumeData.summary ? `
+          <div class="section">
+            <div class="section-title">PROFESSIONAL SUMMARY</div>
+            <p>${resumeData.summary}</p>
+          </div>
+        ` : ''}
 
-          // LinkedIn and Website
-          ...(resumeData.personalInfo.linkedin || resumeData.personalInfo.website ? [
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: [resumeData.personalInfo.linkedin, resumeData.personalInfo.website]
-                    .filter(Boolean)
-                    .join(' | '),
-                  size: 20,
-                }),
-              ],
-              alignment: AlignmentType.CENTER,
-            }),
-          ] : []),
+        ${resumeData.workExperience.length > 0 ? `
+          <div class="section">
+            <div class="section-title">WORK EXPERIENCE</div>
+            ${resumeData.workExperience.map(exp => `
+              <div style="margin-bottom: 20px;">
+                <div class="job-title">${exp.jobTitle}</div>
+                <div class="company">${exp.company} | ${exp.location}</div>
+                <div class="date">${exp.startDate} - ${exp.isCurrentPosition ? 'Present' : exp.endDate}</div>
+                <div class="description">${exp.description}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
 
-          // Summary Section
-          ...(resumeData.summary ? [
-            new Paragraph({
-              children: [new TextRun({ text: '', size: 20 })],
-            }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: 'PROFESSIONAL SUMMARY',
-                  bold: true,
-                  size: 24,
-                }),
-              ],
-              heading: HeadingLevel.HEADING_2,
-            }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: resumeData.summary,
-                  size: 20,
-                }),
-              ],
-            }),
-          ] : []),
+        ${resumeData.education.length > 0 ? `
+          <div class="section">
+            <div class="section-title">EDUCATION</div>
+            ${resumeData.education.map(edu => `
+              <div style="margin-bottom: 15px;">
+                <div class="job-title">${edu.degree}</div>
+                <div class="company">${edu.institution} | ${edu.location}</div>
+                <div class="date">Graduated: ${edu.graduationDate}${edu.gpa ? ` | GPA: ${edu.gpa}` : ''}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
 
-          // Work Experience Section
-          ...(resumeData.workExperience.length > 0 ? [
-            new Paragraph({
-              children: [new TextRun({ text: '', size: 20 })],
-            }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: 'WORK EXPERIENCE',
-                  bold: true,
-                  size: 24,
-                }),
-              ],
-              heading: HeadingLevel.HEADING_2,
-            }),
-            ...resumeData.workExperience.flatMap((exp) => [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: exp.jobTitle,
-                    bold: true,
-                    size: 22,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `${exp.company} | ${exp.location}`,
-                    italics: true,
-                    size: 20,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `${exp.startDate} - ${exp.isCurrentPosition ? 'Present' : exp.endDate}`,
-                    size: 18,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: exp.description,
-                    size: 20,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: '', size: 12 })],
-              }),
-            ]),
-          ] : []),
+        ${resumeData.skills.technical.length > 0 || resumeData.skills.soft.length > 0 || resumeData.skills.languages.length > 0 ? `
+          <div class="section">
+            <div class="section-title">SKILLS</div>
+            ${resumeData.skills.technical.length > 0 ? `
+              <div style="margin-bottom: 10px;">
+                <span class="skills-category">Technical Skills:</span> ${resumeData.skills.technical.join(', ')}
+              </div>
+            ` : ''}
+            ${resumeData.skills.soft.length > 0 ? `
+              <div style="margin-bottom: 10px;">
+                <span class="skills-category">Soft Skills:</span> ${resumeData.skills.soft.join(', ')}
+              </div>
+            ` : ''}
+            ${resumeData.skills.languages.length > 0 ? `
+              <div style="margin-bottom: 10px;">
+                <span class="skills-category">Languages:</span> ${resumeData.skills.languages.join(', ')}
+              </div>
+            ` : ''}
+          </div>
+        ` : ''}
+      </body>
+      </html>
+    `;
 
-          // Education Section
-          ...(resumeData.education.length > 0 ? [
-            new Paragraph({
-              children: [new TextRun({ text: '', size: 20 })],
-            }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: 'EDUCATION',
-                  bold: true,
-                  size: 24,
-                }),
-              ],
-              heading: HeadingLevel.HEADING_2,
-            }),
-            ...resumeData.education.flatMap((edu) => [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: edu.degree,
-                    bold: true,
-                    size: 22,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `${edu.institution} | ${edu.location}`,
-                    italics: true,
-                    size: 20,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: `Graduated: ${edu.graduationDate}${edu.gpa ? ` | GPA: ${edu.gpa}` : ''}`,
-                    size: 18,
-                  }),
-                ],
-              }),
-              new Paragraph({
-                children: [new TextRun({ text: '', size: 12 })],
-              }),
-            ]),
-          ] : []),
-
-          // Skills Section
-          ...(resumeData.skills.technical.length > 0 || resumeData.skills.soft.length > 0 || resumeData.skills.languages.length > 0 ? [
-            new Paragraph({
-              children: [new TextRun({ text: '', size: 20 })],
-            }),
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: 'SKILLS',
-                  bold: true,
-                  size: 24,
-                }),
-              ],
-              heading: HeadingLevel.HEADING_2,
-            }),
-            ...(resumeData.skills.technical.length > 0 ? [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: 'Technical Skills: ',
-                    bold: true,
-                    size: 20,
-                  }),
-                  new TextRun({
-                    text: resumeData.skills.technical.join(', '),
-                    size: 20,
-                  }),
-                ],
-              }),
-            ] : []),
-            ...(resumeData.skills.soft.length > 0 ? [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: 'Soft Skills: ',
-                    bold: true,
-                    size: 20,
-                  }),
-                  new TextRun({
-                    text: resumeData.skills.soft.join(', '),
-                    size: 20,
-                  }),
-                ],
-              }),
-            ] : []),
-            ...(resumeData.skills.languages.length > 0 ? [
-              new Paragraph({
-                children: [
-                  new TextRun({
-                    text: 'Languages: ',
-                    bold: true,
-                    size: 20,
-                  }),
-                  new TextRun({
-                    text: resumeData.skills.languages.join(', '),
-                    size: 20,
-                  }),
-                ],
-              }),
-            ] : []),
-          ] : []),
-        ],
-      }],
+    // Create blob with proper MIME type for Word document
+    const blob = new Blob([htmlContent], {
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     });
-
-    const buffer = await Packer.toBuffer(doc);
-    const fileName = `${resumeData.personalInfo.fullName || 'Resume'}_Resume.docx`;
     
-    saveAs(new Blob([buffer]), fileName);
+    const fileName = `${resumeData.personalInfo.fullName || 'Resume'}_Resume.doc`;
+    saveAs(blob, fileName);
     
     return { success: true, fileName };
   } catch (error) {
-    console.error('DOCX export failed:', error);
-    throw new Error('Failed to export DOCX');
+    console.error('DOC export failed:', error);
+    throw new Error('Failed to export DOC');
   }
 };

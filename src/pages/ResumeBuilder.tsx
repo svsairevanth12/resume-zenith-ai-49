@@ -12,6 +12,7 @@ import { TemplateSelector, ResumeTemplate } from '@/components/resume/TemplateSe
 import { ApiKeyInput } from '@/components/ApiKeyInput';
 import { Download, Sparkles, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { DownloadDialog } from '@/components/resume/DownloadDialog';
 
 export interface ResumeData {
   personalInfo: {
@@ -72,6 +73,7 @@ const ResumeBuilder = () => {
   const [activeTab, setActiveTab] = useState('template');
   const [selectedTemplate, setSelectedTemplate] = useState<ResumeTemplate>('modern');
   const [apiKeySet, setApiKeySet] = useState(false);
+  const [showDownloadDialog, setShowDownloadDialog] = useState(false);
 
   const updateResumeData = (section: keyof ResumeData, data: any) => {
     setResumeData(prev => ({
@@ -89,11 +91,7 @@ const ResumeBuilder = () => {
   };
 
   const handleDownload = () => {
-    // TODO: Implement PDF download functionality
-    toast({
-      title: "Download Started",
-      description: "Your resume is being prepared for download.",
-    });
+    setShowDownloadDialog(true);
   };
 
   const getTabIcon = (tab: string) => {
@@ -227,13 +225,20 @@ const ResumeBuilder = () => {
           {/* Preview Section */}
           <div className="lg:sticky lg:top-24 lg:h-[calc(100vh-6rem)]">
             <Card className="resume-preview h-full">
-              <CardContent className="p-0 h-full">
+              <CardContent className="p-0 h-full" id="resume-preview">
                 <ResumePreview data={resumeData} template={selectedTemplate} />
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
+
+      {/* Download Dialog */}
+      <DownloadDialog 
+        open={showDownloadDialog}
+        onOpenChange={setShowDownloadDialog}
+        resumeData={resumeData}
+      />
     </div>
   );
 };
